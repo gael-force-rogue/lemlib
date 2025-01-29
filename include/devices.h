@@ -3,8 +3,8 @@
 #include "main.h"
 
 enum LiftState {
-    STANDBY = 0,
-    LOAD = 180,
+    STANDBY = -100,
+    LOAD = 35,
     SCORE = 600,
     ALLIANCE = 800,
 };
@@ -12,24 +12,24 @@ enum LiftState {
 class LiftWithPID {
    private:
     Motor motor;
+    Rotation rotation;
     bool driverInterrupt = false;
 
    public:
     LiftState state = STANDBY;
 
-    LiftWithPID(int port) : motor(port, MotorGearset::red) {
-        this->motor.set_brake_mode(E_MOTOR_BRAKE_HOLD);
-        this->motor.set_zero_position(0);
-    };
-
+    LiftWithPID(int port, int rPort) : motor(port, MotorGearset::red), rotation(rPort) {};
     void reset() {
+        this->motor.set_brake_mode(E_MOTOR_BRAKE_HOLD);
         motor.tare_position();
-    }
+        rotation.reset_position();
+    };
 
     void coast() {
         motor.set_brake_mode(E_MOTOR_BRAKE_COAST);
         motor.brake();
     };
+
     void hold() {
         motor.set_brake_mode(E_MOTOR_BRAKE_HOLD);
         motor.brake();
@@ -39,7 +39,7 @@ class LiftWithPID {
         return motor.get_position();
     };
 
-    inline void handleDrivercontrol(bool upB, bool downB, bool macroB) {
+    inline void handleDrivercontrol(bool upB, bool downB, bool macroB, bool scoreMacroB = false) {
         if (upB) {
             this->driverInterrupt = true;
             this->motor.move(127);
@@ -47,7 +47,9 @@ class LiftWithPID {
             this->driverInterrupt = true;
             this->motor.move(-127);
         } else if (macroB) {
-            if (driverInterrupt) {
+            if (scoreMacroB) {
+                this->state = SCORE;
+            } else if (driverInterrupt) {
                 state = LOAD;
             } else if (state == LOAD) {
                 state = STANDBY;
@@ -55,9 +57,7 @@ class LiftWithPID {
                 state = LOAD;
             };
 
-            motor.move_absolute(state, 50);
-
-            printf("Position: %f Target: %f\n", this->position(), this->state);
+            motor.move_absolute(state, 100);
 
             driverInterrupt = false;
         } else if (driverInterrupt) {
@@ -74,7 +74,7 @@ class LiftWithPID {
             motor.move_absolute(state, 100);
     };
 
-    inline void spinToPosition(float position, float velocity) {
+    inline void spinToPosition(float position, float velocity = 100) {
         motor.move_absolute(position, velocity);
     };
 };
@@ -87,16 +87,18 @@ class Intake {
    public:
     Intake(int port) : motor(port, pros::MotorGearset::blue) {};
 
-    inline void in() {
-        motor.move(127);
+    inline void in(float velocity = 127) {
+        motor.move(velocity);
     };
 
-    inline void out() {
-        motor.move(-127);
+    inline void out(float velocity = 127) {
+        motor.move(-velocity);
     };
 
     inline void stop() {
+        motor.set_brake_mode(E_MOTOR_BRAKE_HOLD);
         motor.move(0);
+        motor.brake();
     };
 
     inline void handleDrivercontrol(bool inB, bool outB) {
@@ -114,7 +116,7 @@ class Intake {
             antiJamIsRunning = true;
 
             motor.move(-127);
-            pros::delay(100);
+            delay(100);
             motor.move(127);
 
             antiJamIsRunning = false;

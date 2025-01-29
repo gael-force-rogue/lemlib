@@ -1,0 +1,285 @@
+
+void blue_awp() {
+    IS_RED = false;
+    chassis.setPose({0, 0, 0});
+
+    chassisForTurns.turnToHeading(-45, 2000, {}, false);
+
+    // Move to alliance
+    chassis.moveToPoint(-7, 3, 2000, {.forwards = true, .maxSpeed = 100});
+    exit_condition({-7, 3}, 3);
+    chassisForTurns.turnToHeading(-62, 700, {.maxSpeed = 100}, false);
+    lift.spinToPosition(900, 100);
+    delay(500);
+
+    // Move to mogo
+    intake.in();
+    chassis.moveToPose(28, -19, -65, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70});
+    exit_condition({28, -19}, 3);
+    lift.spinToPosition(300, 100);
+    clamp.set_value(1);
+    delay(200);
+    chassisForTurns.turnToHeading(180, 1000, {});
+
+    // Ring 1
+    chassis.moveToPoint(26, -38, 3000, {.forwards = true, .maxSpeed = 100});
+    exit_condition({26, -38}, 1);
+    delay(800);
+
+    // swing back
+    chassis.moveToPose(22, -20, 110, 3000, {.forwards = false, .lead = 0.1, .maxSpeed = 100});
+    exit_condition({22, -20}, 1);
+
+    // Ring 2
+    chassis.moveToPose(41.5, -28, 170, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 60});
+    exit_condition({41.5, -28}, 1);
+    delay(500);
+
+    colorSortEnabled = true;
+
+    // Ring 3
+    chassis.moveToPose(40, -52, 190, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 40}, false);
+    // exit_condition({40, -53}, 1);
+    delay(500);
+
+    // on the way to ladder
+    lift.hold();
+    lift.spinToPosition(300, 100);
+    antiJamEnabled = false;
+    chassis.moveToPose(30, -20, -135, 3000, {.forwards = false, .lead = 0.1, .maxSpeed = 100});
+    exit_condition({30, -20}, 1);
+
+    // ladder
+    intake.stop();
+    chassis.moveToPose(35, 5, -170, 3000, {.forwards = false, .lead = 0.1, .maxSpeed = 100}, false);
+    lift.handleDrivercontrol(false, true, false);
+    delay(500);
+    lift.coast();
+};
+
+void red_awp_old() {
+    IS_RED = true;
+    chassis.setPose({0, 0, 0});
+
+    chassisForTurns.turnToHeading(45, 2000, {}, false);
+
+    chassis.moveToPoint(9, 2, 2000, {.forwards = true, .maxSpeed = 100}, false);
+    exit_condition({9, 2}, 3);
+    chassisForTurns.turnToHeading(62, 700, {}, false);
+    lift.spinToPosition(900, 100);
+    delay(500);
+    lift.spinToPosition(300, 100);
+    chassis.moveToPose(-24, -16, 45, 2000, {.forwards = false, .maxSpeed = 100});
+    exit_condition({-24, -16}, 1);
+    clamp.set_value(1);
+    delay(200);
+    chassisForTurns.turnToHeading(180, 1000, {});
+    intake.in();
+
+    // Ring 1
+    chassis.moveToPoint(-26, -36, 3000, {.forwards = true, .maxSpeed = 100});
+    exit_condition({-26, -36}, 1);
+    delay(700);
+
+    // Swing back
+    chassis.moveToPose(-20, -20, -110, 3000, {.forwards = false, .lead = 0.1, .maxSpeed = 100});
+    exit_condition({-20, -20}, 1);
+
+    // Ring 2
+    chassis.moveToPose(-37, -34, -170, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 100});
+    exit_condition({-37, -34}, 1);
+    delay(500);
+
+    colorSortEnabled = true;
+
+    // ring 3
+    chassis.moveToPose(-37, -46, -187, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 100});
+    exit_condition({-37, -46}, 1);
+    delay(1000);
+
+    lift.spinToPosition(400, 100);
+
+    antiJamEnabled = false;
+    chassis.moveToPoint(-22, -20, 3000, {.forwards = false, .maxSpeed = 100});
+    exit_condition({-22, -20}, 1);
+
+    chassis.moveToPoint(-35, -10, 3000, {.forwards = false, .maxSpeed = 100}, false);
+    lift.handleDrivercontrol(false, true, false);
+    intake.stop();
+    delay(500);
+    lift.coast();
+};
+
+void skills() {
+    float start = pros::millis();
+    lift.reset();
+
+    // set pose
+    chassis.setPose(-58, 7, -135);
+
+    lift.spinToPosition(900, 100);
+    delay(1000);
+
+    // clamp mogo
+    chassis.moveToPoint(-45, 26, 3000, {.forwards = false, .maxSpeed = 70}, false);
+    // exit_condition({-45, 28}, 1);
+    clamp.set_value(1);
+    delay(1000);
+    lift.spinToPosition(-200, 100);
+
+    // turn to ring
+    chassisForTurns.turnToHeading(90, 500);
+
+    intake.in();
+
+    // first ring
+    chassis.moveToPoint(-17, 28, 3000, {.forwards = true, .maxSpeed = 100});
+    exit_condition({-17, 28}, 2);
+
+    // turn toward wall
+    chassisForTurns.turnToHeading(50, 900, {}, false);
+
+    // checkpoint to 2nd ring
+    chassis.moveToPoint(-21, 38, 3000, {.forwards = true, .maxSpeed = 100}, false);
+
+    // go to 2nd ring
+    chassis.moveToPoint(20, 53, 3000, {.forwards = true, .maxSpeed = 80});
+    exit_condition({20, 53}, 2);
+    hardStop();
+
+    // navigate to neutral stake
+    chassis.moveToPoint(-14.5, 45, 5000, {.forwards = true, .maxSpeed = 70}, false);
+    lift.handleDrivercontrol(false, true, false);
+    lift.reset();
+    lift.spinToPosition(0, 100);
+    chassisForTurns.turnToHeading(-7, 1000, {}, false);
+    lift.spinToPosition(270, 100);
+
+    /// go to netutral stake
+    antiJamEnabled = false;
+    chassis.moveToPose(-13, 63, -9, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 20}, false);
+    lift.spinToPosition(270, 100);
+    delay(1100);
+    intake.stop();
+    delay(500);
+    lift.spinToPosition(900, 100);
+    delay(500);
+    chassis.moveToPoint(-13, 50, 3000, {.forwards = false, .maxSpeed = 100});
+    exit_condition({-13, 50}, 2);
+    antiJamEnabled = true;
+    lift.spinToPosition(0, 100);
+
+    // go to 4th ring
+    chassis.turnToHeading(-90, 500);
+    intake.in();
+    chassis.moveToPoint(-25, 42, 3000, {.forwards = true, .maxSpeed = 40});
+    exit_condition({-25, 42}, 2);
+    chassisForTurns.turnToHeading(-90, 1000, {}, false);
+
+    // go to 5th ring
+    chassis.moveToPose(-90, 42, 0, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 30});
+    exit_condition({-90, 42}, 2);
+
+    // swing to 6th ring
+    chassis.moveToPose(-54, 58, -60, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 50});
+    exit_condition({-54, 58}, 2);
+
+    // Store in corner
+    // chassis.moveToPose(-50, 58, 0, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 50}, false);
+    // exit_condition({-50, 58}, 2);
+    chassis.moveToPoint(-65, 50, 3000, {.forwards = false, .maxSpeed = 100});
+    exit_condition({-65, 50}, 2);
+    chassis.moveToPose(-78, 51, 45, 3000, {.forwards = false, .maxSpeed = 100});
+    exit_condition({-78, 51}, 2);
+    clamp.set_value(0);
+    delay(500);
+    intake.stop();
+
+    float end = pros::millis();
+    printf("Quadrant 1: %f\n", end - start);
+
+    /// 2ND QUADRANT
+    start = pros::millis();
+
+    // Aim Towards 2nd Quadrant
+    chassis.moveToPoint(-60, 40, 3000, {.forwards = true, .maxSpeed = 70});
+    exit_condition({-60, 40}, 2);
+    chassisForTurns.turnToHeading(180, 1000, {}, false);
+
+    // Clamp
+    chassis.moveToPoint(-68, -10, 7000, {.forwards = true, .maxSpeed = 30});
+    exit_condition({-68, -10}, 2);
+    chassisForTurns.turnToHeading(0, 1000, {}, false);
+    chassis.moveToPose(-68, -16, 0, 7000, {.forwards = false, .lead = 0.1, .maxSpeed = 30});
+    exit_condition({-68, -16}, 2);
+    clamp.set_value(1);
+    delay(50);
+
+    // turn toward first ring
+    chassisForTurns.turnToHeading(90, 500, {}, false);
+
+    intake.in();
+
+    // first ring
+    chassis.moveToPoint(-35, -10, 3000, {.forwards = true, .maxSpeed = 100});
+    exit_condition({-35, -10}, 2);
+    chassisForTurns.turnToHeading(155, 700, {}, false);
+
+    hardStop();
+
+    // transition to 2nd ring
+    chassis.moveToPoint(0, -23, 3000, {.forwards = true, .maxSpeed = 100});
+    exit_condition({0, -23}, 2);
+
+    // go to 2nd ring
+    chassis.moveToPoint(13, -27, 3000, {.forwards = true, .maxSpeed = 100});
+    exit_condition({18, -27}, 2);
+    delay(500);
+
+    // go to neutral ring
+    chassisForTurns.turnToHeading(-80, 1000, {}, false);
+    chassis.moveToPoint(-1, -29, 3000, {.forwards = true, .maxSpeed = 70});
+    exit_condition({-1, -27}, 2);
+
+    // turn to neutral stake & score
+    chassisForTurns.turnToHeading(180, 1500, {}, false);
+    chassis.moveToPoint(-1, -47, 3000, {.forwards = true, .maxSpeed = 80});
+    exit_condition({-1, -47}, 1);
+    chassisForTurns.turnToHeading(180, 1500, {}, false);
+    delay(500);
+    chassis.moveToPoint(-1, -39, 3000, {.forwards = false, .maxSpeed = 70});
+    exit_condition({-1, -39}, 1);
+    chassis.turnToHeading(-90, 1000);
+
+    // go to 3rd ring
+    chassis.moveToPoint(-10, -43, 3000, {.forwards = true, .maxSpeed = 70});
+    exit_condition({-10, -43}, 2);
+
+    // go to 4th ring
+    chassis.moveToPoint(-25, -43, 3000, {.forwards = true, .maxSpeed = 50});
+    exit_condition({-25, -43}, 2);
+
+    // go to 5th ring
+    chassis.moveToPoint(-52, -43, 3000, {.forwards = true, .maxSpeed = 50});
+    exit_condition({-52, -43}, 2);
+
+    // checkpoint for 6th ring
+    chassis.moveToPose(-43, -35, 160, 3000, {.forwards = false, .lead = 0.1, .maxSpeed = 30});
+    exit_condition({-43, -35}, 2);
+
+    // go to 6th ring
+    chassis.moveToPose(-35, -60, 90, 3000, {.forwards = true, .lead = 0.1, .maxSpeed = 50}, false);
+    exit_condition({-35, -60}, 2);
+    delay(500);
+
+    // store in corner
+    clamp.set_value(0);
+    chassis.moveToPose(-50, -55, 55, 3000, {.forwards = false, .lead = 0.1, .maxSpeed = 50}, false);
+    exit_condition({-50, -55}, 2);
+
+    intake.stop();
+
+    hardStop();
+    end = pros::millis();
+    printf("Quadrant 2: %f", end - start);
+};

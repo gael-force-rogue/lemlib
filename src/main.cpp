@@ -14,7 +14,7 @@ pros::ADIDigitalOut knocker('A');
 pros::Optical optical(15);
 
 MotorGroup leftMotors({20, -16, 1}, MotorGearset::blue);
-MotorGroup rightMotors({-9, 17, -10}, MotorGearset::blue);
+MotorGroup rightMotors({-9, 8, -10}, MotorGearset::blue);
 
 Imu imu(3);
 
@@ -118,6 +118,7 @@ void exit_condition(Pose target, double exit_range) {
 void hardstop() {
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
     chassis.cancelMotion();
+    chassis.arcade(0, 0);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 };
 
@@ -130,14 +131,15 @@ enum IntakeControllerState {
     REVERSE_ON_RED,
     REVERSE_ON_BLUE
 };
-bool antiJamEnabled = true, intakeControllerEnabled = true;
+bool antiJamEnabled = true;
+bool intakeControllerEnabled = true;
 IntakeControllerState intakeState = STOP;
 void intakeControllerStateTaskF() {
     while (intakeControllerEnabled) {
         auto hue = optical.get_hue();
         bool isBlue = hue > 200 && hue < 260;
         bool isRed = hue < 15;
-        printf("Hue: %f %f %f\n", hue, isBlue, isRed);
+        // printf("Hue: %f %f %f\n", hue, isBlue, isRed);
 
         if (antiJamEnabled) {
             intake.handleAntiJam();
@@ -277,62 +279,103 @@ void blue_sig_awp() {
     delay(100);
 
     // Ring 1
-    antiJamEnabled = false;
-    intakeState = REVERSE_ON_RED;
+    intakeState = IN;
     chassisForTurns.turnToHeading(-220, 800, {.maxSpeed = 70}, false);
     lift.hold();
-    chassis.moveToPose(46, -33, 175, 1200, {.forwards = true, .lead = 0.2, .maxSpeed = 80}, false);
-    exit_condition({46, -33}, 1.5);
-    delay(700);
+    chassis.moveToPose(45, -33, 170, 1200, {.forwards = true, .lead = 0.2, .maxSpeed = 80}, false);
+    antiJamEnabled = false;
+    delay(300);
 
     // Ring 2
-    chassis.moveToPose(46, -44, 180, 1200, {.forwards = true, .lead = 0.1, .maxSpeed = 80});
-    exit_condition({46, -44}, 1);
+    chassis.moveToPose(45, -44, 180, 1200, {.forwards = true, .lead = 0.3, .maxSpeed = 80});
+    exit_condition({44, -44}, 1);
     delay(500);
 
     // Ring 3
-    chassis.moveToPose(46, -32, 170, 900, {.forwards = false, .lead = 0.2, .maxSpeed = 80}, false);
+    chassis.moveToPose(43, -32, 175, 900, {.forwards = false, .lead = 0.2, .maxSpeed = 80}, false);
     chassis.moveToPoint(23, -40, 2000, {.forwards = true, .maxSpeed = 80});
     exit_condition({23, -37}, 1);
 
     // Line up for ring 4
-    chassis.moveToPose(2, 20, 0, 3000, {.forwards = true, .lead = 0.3, .maxSpeed = 90});
-    exit_condition({2, 20}, 1);
-    hardstop();
-    delay(1000);
+    chassis.moveToPose(2, 10, 0, 3000, {.forwards = true, .lead = 0.3, .maxSpeed = 100});
+    exit_condition({2, 10}, 1);
     clamp.set_value(0);
 
     // Ring 4
     intake.in();
     intakeState = STOP_ON_BLUE;
-    chassis.moveToPose(2, 36, 0, 2000, {.forwards = true, .maxSpeed = 90});
+    chassis.moveToPose(2, 36, 0, 900, {.forwards = true, .maxSpeed = 90});
     exit_condition({2, 36}, 1);
-    delay(700);
+    // delay(700);
 
     // Turn to Mogo
-    chassisForTurns.turnToHeading(-90, 1000, {.maxSpeed = 100}, false);
+    chassisForTurns.turnToHeading(-90, 600, {.maxSpeed = 110}, false);
 
     // Go to mogo
-    chassis.moveToPose(20, 36, -90, 600, {.forwards = false, .lead = 0.15, .maxSpeed = 70});
-    exit_condition({20, 36}, 1);
-    delay(500);
+    antiJamEnabled = true;
+    chassis.moveToPose(26, 28, -90, 1000, {.forwards = false, .lead = 0.2, .maxSpeed = 80});
+    exit_condition({26, 28}, 1);
+    delay(100);
     clamp.set_value(1);
     delay(200);
-    intakeState = IN;
-    antiJamEnabled = false;
 
     // Standalone
     chassisForTurns.turnToHeading(0, 600, {.maxSpeed = 100}, false);
-    chassis.moveToPose(26, 75, 0, 1000, {.forwards = true, .lead = 0.1, .maxSpeed = 127});
-    exit_condition({26, 75}, 1);
+    intakeState = IN;
+    intake.in();
+    chassis.moveToPose(20, 63, 0, 1000, {.forwards = true, .lead = 0.1, .maxSpeed = 127});
+    exit_condition({20, 63}, 1);
+    delay(200);
 
     // Ladder
-    lift.spinToPosition(250);
-    chassis.turnToHeading(20, 200, {.maxSpeed = 100});
-    chassis.moveToPoint(35, 40, 2000, {.forwards = false, .maxSpeed = 127});
-    exit_condition({35, 40}, 3);
-    chassis.moveToPose(45, 10, 45, 2000, {.forwards = false, .lead = 0.2, .maxSpeed = 127});
-    exit_condition({45, 10}, 1);
+    lift.spinToPosition(400);
+    chassis.moveToPose(32, 10, 0, 3000, {.forwards = false, .lead = 0.4, .maxSpeed = 127});
+    exit_condition({32, 10}, 1);
+};
+
+void red_elims() {
+    knocker.set_value(1);
+    chassis.moveToPose(-5, 45, -13, 1100, {.forwards = true, .lead = 0.3, .maxSpeed = 127}, false);
+    knocker.set_value(0);
+    delay(300);
+    chassisForTurns.swingToHeading(-100,
+                                   DriveSide::RIGHT,
+                                   900,
+                                   {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed = 127},
+                                   false);
+    lift.spinToPosition(1000);
+    delay(500);
+    lift.spinToPosition(-30);
+    chassisForTurns.turnToHeading(-180, 2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed = 100}, false);
+    knocker.set_value(1);
+    chassisForTurns.turnToHeading(-135, 2000, {.maxSpeed = 100}, false);
+    intakeState = IN;
+    knocker.set_value(0);
+    chassis.moveToPoint(-10, 8, 2000, {.forwards = true, .maxSpeed = 127}, false);
+    chassisForTurns.swingToHeading(-180, DriveSide::LEFT, 1000, {.maxSpeed = 100}, false);
+    chassisForTurns.turnToHeading(90, 2000, {.maxSpeed = 100}, false);
+
+    // chassis.moveToPose(0, 50, -180, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 127}, false);
+    // chassis.swingToHeading(150, DriveSide::RIGHT, 1000, {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 100}, false);
+    // knocker.set_value(1);
+};
+
+void blue_elims() {
+    knocker.set_value(1);
+    chassis.moveToPose(5, 45, 13, 2000, {.forwards = true, .lead = 0.3, .maxSpeed = 127}, false);
+    knocker.set_value(0);
+    delay(100);
+    chassisForTurns.swingToHeading(90,
+                                   DriveSide::LEFT,
+                                   900,
+                                   {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 100},
+                                   false);
+    chassisForTurns.swingToHeading(105,
+                                   DriveSide::RIGHT,
+                                   600,
+                                   {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 127},
+                                   false);
+    lift.spinToPosition(900);
 };
 
 void autonomous() {
@@ -341,7 +384,7 @@ void autonomous() {
 
     chassis.setPose({0, 0, 0});
 
-    blue_sig_awp();
+    red_elims();
 
     end = pros::millis();
     printf("Auton took: %f milliseconds in total\n", end - start);
